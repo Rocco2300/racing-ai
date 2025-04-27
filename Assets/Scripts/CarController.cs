@@ -7,6 +7,10 @@ public class CarController : MonoBehaviour
     private Rigidbody rb;
     private WheelController[] wheels;
 
+    public float steerAmount;
+    public float brakeAmount;
+    public float accelerationAmount;
+
     [SerializeField] private float motorTorque;
     [SerializeField] private float brakeTorque;
     [SerializeField] private float maxSteeringAngle;
@@ -25,15 +29,11 @@ public class CarController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        var vertical = Input.GetAxis("Vertical");
-        var horizontal = Input.GetAxis("Horizontal");
-
-        bool isAccelerating = vertical >= 0;
         foreach (var wheel in wheels)
         {
-            wheel.wheelCollider.steerAngle = (wheel.steering) ? horizontal * maxSteeringAngle : 0f;
-            wheel.wheelCollider.motorTorque = (isAccelerating && wheel.driving) ? vertical * motorTorque : 0f;
-            wheel.wheelCollider.brakeTorque = isAccelerating ? 0 : brakeTorque;
+            wheel.wheelCollider.steerAngle = (wheel.steering) ? steerAmount * maxSteeringAngle : 0f;
+            wheel.wheelCollider.motorTorque = (wheel.driving) ? accelerationAmount * motorTorque : 0f;
+            wheel.wheelCollider.brakeTorque = brakeAmount * brakeTorque;
         }
     }
 }
