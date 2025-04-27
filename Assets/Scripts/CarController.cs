@@ -4,13 +4,36 @@ using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    private List<CustomWheelCollider> wheels = new();
+    private Rigidbody rb;
+    private WheelController[] wheels;
+
+    [SerializeField] private float motorTorque;
+    [SerializeField] private float brakeTorque;
+    [SerializeField] private float maxSteeringAngle;
+    [SerializeField] private float centerOfMassOffset;
     
-    private void Awake()
+    private void Start()
     {
-        for (int i = 0; i < transform.childCount; i++)
+        rb = GetComponent<Rigidbody>();
+
+        var centerOfMass = rb.centerOfMass;
+        centerOfMass.y += centerOfMassOffset;
+        rb.centerOfMass = centerOfMass;
+        
+        wheels = GetComponentsInChildren<WheelController>();
+    }
+
+    private void FixedUpdate()
+    {
+        var vertical = Input.GetAxis("Vertical");
+        var horizontal = Input.GetAxis("Horizontal");
+
+        bool isAccelerating = vertical >= 0;
+        foreach (var wheel in wheels)
         {
-            wheels.Add(transform.GetChild(i).GetComponent<CustomWheelCollider>());
-        }     
+            wheel.wheelCollider.steerAngle = (wheel.steering) ? horizontal * maxSteeringAngle : 0f;
+            wheel.wheelCollider.motorTorque = (isAccelerating && wheel.driving) ? vertical * motorTorque : 0f;
+            wheel.wheelCollider.brakeTorque = isAccelerating ? 0 : brakeTorque;
+        }
     }
 }
